@@ -1,0 +1,125 @@
+import heapq
+
+# Define the size of the grid (e.g., 5x5)
+GRID_SIZE = 5
+
+# Define the toggle pattern (center + neighbors)
+TOGGLE_PATTERN = [(-1, 0), (1, 0), (0, -1), (0, 1), (0, 0)]  # up, down, left, right, self
+
+# Function to toggle the light at (x, y)
+def toggle(state, x, y):
+    new_state = state[:]
+    for dx, dy in TOGGLE_PATTERN:
+        nx, ny = x + dx, y + dy
+        if 0 <= nx < GRID_SIZE and 0 <= ny < GRID_SIZE:
+            idx = nx * GRID_SIZE + ny
+            new_state[idx] = 1 - new_state[idx]  # Toggle the light (1->0, 0->1)
+    return new_state
+
+# Heuristic function: Hamming distance (number of 1's)
+def hamming_heuristic(state):
+    return sum(state)
+
+# A* Search algorithm for Lights Out
+def astar(start_state, goal_state):
+    open_list = []
+    heapq.heappush(open_list, (hamming_heuristic(start_state), 0, start_state, []))  # (f(n), g(n), state, path)
+    closed_set = set()  # Set of visited states
+
+    while open_list:
+        _, g, current_state, path = heapq.heappop(open_list)
+
+        # Check if we reached the goal state
+        if current_state == goal_state:
+            return path
+
+        # Add state to closed set
+        state_tuple = tuple(current_state)
+        if state_tuple in closed_set:
+            continue
+        closed_set.add(state_tuple)
+
+        # Generate new states by toggling each light
+        for i in range(GRID_SIZE * GRID_SIZE):
+            x, y = divmod(i, GRID_SIZE)
+            new_state = toggle(current_state, x, y)
+            new_path = path + [(x, y)]
+
+            # Push the new state into the open list
+            heapq.heappush(open_list, (g + 1 + hamming_heuristic(new_state), g + 1, new_state, new_path))
+
+    return None  # No solution found
+
+# Example usage
+start_state = [1] * (GRID_SIZE * GRID_SIZE)  # All lights on
+goal_state = [0] * (GRID_SIZE * GRID_SIZE)   # All lights off
+
+solution = astar(start_state, goal_state)
+if solution is not None:
+    print(f"Solution found! Toggle the following lights: {solution}")
+else:
+    print("No solution found.")
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+import heapq
+goal_state = [0] * (GRID_SIZE * GRID_SIZE)   # All lights off
+# Define the size of the grid (e.g., 5x5)
+GRID_SIZE = 4
+
+# Define the toggle pattern (center + neighbors)
+TOGGLE_PATTERN = [(-1, 0), (1, 0), (0, -1), (0, 1), (0, 0)]  # up, down, left, right, self
+
+# Function to toggle the light at (x, y)
+def toggle(state, x, y):
+    new_state = state[:]
+    for dx, dy in TOGGLE_PATTERN:
+        nx, ny = x + dx, y + dy
+        if 0 <= nx < GRID_SIZE and 0 <= ny < GRID_SIZE:
+            idx = nx * GRID_SIZE + ny
+            new_state[idx] = 1 - new_state[idx]  # Toggle the light (1->0, 0->1)
+    return new_state
+
+# Heuristic function: Hamming distance (number of 1's)
+def hamming_heuristic(state):
+    return sum(state)
+
+# A* Search algorithm for Lights Out
+def astar(start_state, goal_state):
+    open_list = []
+    heapq.heappush(open_list, (hamming_heuristic(start_state), 0, start_state, []))  # (f(n), g(n), state, path)
+    closed_set = set()  # Set of visited states
+
+    while open_list:
+        g, current_state, path = heapq.heappop(open_list)
+
+        # Check if we reached the goal state
+        if current_state == goal_state:
+            return path
+
+        # Add state to closed set
+        state_tuple = tuple(current_state)
+        if state_tuple in closed_set:
+            continue
+        closed_set.add(state_tuple)
+
+        # Generate new states by toggling each light
+        for i in range(GRID_SIZE * GRID_SIZE):
+            x, y = divmod(i, GRID_SIZE)
+            new_state = toggle(current_state, x, y)
+            new_path = path + [(x, y)]
+
+            # Push the new state into the open list
+            heapq.heappush(open_list, (g + 1 + hamming_heuristic(new_state), g + 1, new_state, new_path))
+
+    return None  # No solution found
+
+# Example usage
+start_state = [1] * (GRID_SIZE * GRID_SIZE)  # All lights on
+goal_state = [0] * (GRID_SIZE * GRID_SIZE)   # All lights off
+
+solution = astar(start_state, goal_state)
+if solution is not None:
+    print(f"Solution found! Toggle the following lights: {solution}")
+else:
+    print("No solution found.")
