@@ -82,3 +82,31 @@ def solve_crossing_the_river():
 
 # Run the solution
 solve_crossing_the_river()
+-------------------------------------------------------------------------------------
+from collections import deque
+
+def bfs(initial_state, goal_state):
+    # Queue stores tuples of (state, path)
+    queue = deque([(initial_state, [])])
+    
+    # Set to track visited states
+    visited = set()
+    visited.add(initial_state)
+    
+    while queue:
+        current_state, path = queue.popleft()
+        
+        # If we reach the goal, return the path
+        if current_state == goal_state:
+            return path + [current_state]
+        
+        # Generate possible moves by expanding the current state
+        possible_moves = expand_state(current_state)
+        
+        # Add each valid move to the queue if not visited
+        for move in possible_moves:
+            if move not in visited:
+                visited.add(move)
+                queue.append((move, path + [current_state]))
+    
+    return None  # If no solution is found
