@@ -1,0 +1,84 @@
+#crossing the river:a farmer, a lamb, a wolf and a cabbage
+#the heuristic will count how many characters are left on the river bank
+import heapq
+initial_state = (0, 0, 0, 0)
+goal_state = (1, 1, 1, 1)
+def is_valid(state):
+    farmer, wolf, lamb, cabbage = state
+
+    if farmer != wolf and lamb == wolf:
+        return False
+    if farme != lamb and lamb == cabbage:
+        return False
+
+    return True 
+
+def is_goal(state):
+    if state == goal_state: #site ja preminaa rekata
+        return True
+
+def heuristic(state):
+    return state.count(0)
+
+def expand_state(state):
+    farmer, wolf, lamb, cabbage = state
+    possible_moves = []
+    
+    # Farmer can move alone, or with one of the other characters
+    # For each move, we manually toggle the character's position
+    possible_moves.append((1 - farmer, wolf, lamb, cabbage))  # Farmer moves alone
+    possible_moves.append((1 - farmer, 1 - wolf, lamb, cabbage))  # Farmer moves with wolf
+    possible_moves.append((1 - farmer, wolf, 1 - lamb, cabbage))  # Farmer moves with lamb
+    possible_moves.append((1 - farmer, wolf, lamb, 1 - cabbage))  # Farmer moves with cabbage
+    
+    # Filter valid moves
+    valid_moves = [move for move in possible_moves if is_valid(move)]
+    
+    return valid_moves
+
+# A* search implementation
+def a_star_search(initial_state, goal_state):
+    open_list = []
+    heapq.heappush(open_list, (heuristic(initial_state), 0, initial_state, []))  # (f, g, state, path)
+    
+    # Set to track visited states
+    visited = set()
+    visited.add(initial_state)
+    
+    while open_list:
+        # Get the state with the lowest f value
+        f, g, current_state, path = heapq.heappop(open_list)
+        
+        # If we reach the goal, return the path
+        if current_state == goal_state:
+            return path + [current_state]
+        
+        # Generate possible moves by expanding the state
+        possible_moves = expand_state(current_state)
+        
+        # Add each valid move to the open list
+        for move in possible_moves:
+            if move not in visited:
+                visited.add(move)
+                heapq.heappush(open_list, (g + 1 + heuristic(move), g + 1, move, path + [current_state]))
+
+    return None  # If no solution is found
+
+# Function to solve the problem and print the solution steps
+def solve_crossing_the_river():
+    # Predefined initial and goal states
+    initial_state = (0, 0, 0, 0)
+    goal_state = (1, 1, 1, 1)
+    
+    # Run A* search to find the solution
+    solution = a_star_search(initial_state, goal_state)
+    
+    if solution:
+        print("Solution path:")
+        for step in solution:
+            print(step)
+    else:
+        print("No solution found")
+
+# Run the solution
+solve_crossing_the_river()
