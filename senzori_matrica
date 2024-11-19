@@ -1,0 +1,66 @@
+#матрица 4х4 со различни сензори (абцд), имплементација
+#почетна состојба:нулта матрица, крајна:поставени сензори
+#Објаснете како ќе се одвива разгранувањето на дадена состојба (expand_state())?
+#expand_state функцијата треба да ги определи сите можни соседи на дадена состојба/сензор во четирите насоки односно во редиците и колоните кои се валидни односно да не постои 
+#сензорот кој сакаме да се додади во истата колона и редица од моменталната состојба
+#Кој алгоритам и зошто
+#пребарување по длабочинабидејќи така ќе стигнеме до оптималното решение, не не интересираат бројот на чекори
+#Од колку најмалку производители треба да набавете сензори за да ја пополнете целата платформа со сензори?
+#за NxN матрица потребни се најмалку Н сензори за да е исполнет улсовот, односно да не со појавува еден сензор повеќе од еднаш во една редица и колона, а бидејќи е NxN редиците и 
+#колоните имаат соодветно Н елементи, а можат да се употребат и повеќе од Н сензори, но не помалку
+
+
+
+#Код
+N = 4
+initial_state = (((0,)*N),)*N #почетната состојба е празна матрица од 4х4 димензија
+sensors = (1, 2, 3, 4) #можните вредности на сензоите (наместо АБЦД)
+
+def is_valid(state, sensor_type, sensor_postition): #дали може да се додаде сензорот
+    row, column = sensor_position
+    if sensor_type in state[row]:  #ако веќе постои тој тип сензор во редицата во матрицата
+        return False
+    valid = True
+    for i in range(N): #итерира низ колоната
+        if state[i][col] == sensor_type: #ако го најде тој тип сензор прекини со барање одма
+            valid = False
+            break
+    return valid #ни кажува дали е пронајден или не тој тип сензор во соодветната редица и колона
+
+def add_sensor(state, sensor_type, sensor_position):
+    row, col = sensor_position
+    state_list = list(list(row) for row in state) # состојбата се менува во листа за да може да се менуваат вредностите
+    state_list[row][col] = sensor_type
+    return tuple(tuple(row) for row in state_list) # состојбата се враќа како торка од торка
+
+def expand_state(state):
+    states = []
+    for row_index, row in enumerate(state):
+        for col_index, element in enumerate(row):
+            if element == 0: # нема сензор на позицијата, може да се додаде
+                for sensor_type in sensors:
+                    sensor_position = row_index, col_index
+                    if is_valid(state, sensor_type, sensor_position):
+                        states.append(add_sensor(state, sensor_type, sensor_position))
+    return states
+
+from collections import deque
+
+def depth_first_search(initial_state):
+    
+    queue = deque([initial_state])
+    visited = {initial_state}
+    
+    while queue:
+        state_to_expand = queue.popleft()
+        
+        for next_state in expand_state(state_to_expand):
+            if next_state not in visited:
+                how_many_zeroes = 0
+                for row in next_state:
+                    how_many_zeroes += row.count(0)
+                
+                if how_many_zeroes == 0: # ako ne preotanale nuli vo state t.e. site polinja se popolnati so senzor
+                    return next_state # togas zavrsilo prebaruvanjeto, kako rezultat vrati ja poslednata razgraneta sostojba
+                queue.appendleft(next_state)
+                visited.add(next_state)
