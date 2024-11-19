@@ -1,0 +1,123 @@
+#Example Problem: Solve the 8-Queens problem, where N = 8, and later generalize it to N-Queens for any N.
+N = 8
+initial state = (((0,)*N),)*N
+from collections import deque
+#so 1 ke obelezham dali ima kralica so 0 slobodnite mesta
+
+def is_valid(state, i, j:
+    if 0>i>N and 0>j>N: #ako ne e validna pozicijata aka bega od tablata
+        return False
+    if state[i][j] == 1: #ako na taa pozicija vekje postoi kralica, obelezuvam so 1
+        return False
+    for n in range(N):
+        if state[i][n] == 1 or state[n][j] == 1: #dali ima kralica vo ista kolona ili red
+            return False
+        #proverka za dijagonali
+        zbir = i + j #glavna
+        razlika = i - j #sporedna
+        for n, row in enumarate(state):
+            for m, column in enumarate(row):
+                if state[n][m] == 1:
+                    n_zbir = n + m
+                    n_razlika = n - m
+                    if n_zbir == zbir or n_razlika == razlika:
+                        return False
+    return True
+def end_check(state):
+    state_matrix = [list(row) for row in state]
+    c = 0
+    for i, row in enumerate(state_matrix):
+        for j, column in enumerate(row):
+            if state_matrix[i][j] == 1:
+                c+=1
+    if c == 8:
+        return True
+
+def expand_state(state):
+    states = []
+    state_matrix = [list(row) for row in state]
+    for i in range(N):
+        for j in range(N):
+            if is_valid(state_matrix, i,j):
+                state_matrix = [list(row) for row in state]
+                state_matrix[i][j] == 1
+                states.append(tuple(map(tuple,state_matrix)))
+    return states
+
+def search_path(initial_state, alg):
+    visited = {initial_state}
+    states_queue = deque ([initial_state])
+    while state_queue:
+        state_to_expand = states_queue.popleft()
+        for next_state in expand_state(state_to_expand):
+            if next_state not in visited:
+                if end_check(next_state):
+                    return next_state
+                if alg == 'dfs':
+                    states_queue.appendleft(next_state)
+                if alg == 'bfs':
+                    states_queue.append(next_state)
+  -------------------------------------------------------------------------------------------------------------------
+  #sudoku
+sudoku = [1,2,3,4,5,6,7,8,9]
+def is_valid(s, state, x, y):
+    if 0>x>8 or 0>y>8:
+        return False
+    for i in range(9):
+        if state[x][i] == s or state[i][y] == s:
+            return False
+    if is_number_in_square(state, x, y):
+        return False
+    return True
+
+def find_zero_s(state):
+    for i, row in enumerate(state):
+        for j, column in enumerate(row):
+            if state[i][j] == 0
+            return i,j
+
+def is_number_in_square(state, row, col, s):
+    start_row, start_col = 3 * (row // 3), 3 * (col // 3)
+    #calculates which 3x3 subgrid the given row or column belongs to
+    for i in range(start_row, start_row+3):
+        for j in range(start_col, start_col+3):
+            if state[i][j] == s:
+                return True
+
+def expand_state(state):
+    states = []
+    state_matrix = [list(row) for row in state]
+    x, y = find_zero_s(state)
+    for i in sudoku:
+        if is_valid(i, state_matrix, x, y):
+            state_matrix=[list(row) for row in state]
+            state_matrix[x][y] = i
+            states.append(tuple(map(tuple,state_matrix)))
+    return states
+
+def end_check_sudoku(state):
+    state_matrix=[list(row) for row in state]
+    c = 0
+    for i, row in enumerate(matrix_state):
+        for j, column in enumerate(row):
+            if matrix_state[i][j] == 0:
+                c+=1
+    if c==0:
+        return True
+    else:
+        return False
+
+def search_sudoku(initial_state, alg):
+    visited = {initial_state}
+    states_queue = deque([initial_state])
+    while states_queue:
+        state_to_expand = states_queue.popleft()
+        for next_state in expand_state_s(state_to_expand):
+            if next_state not in visited:
+                if end_check_sudoku(next_state):
+                    return next_state
+                visited.add(next_state)
+                if alg == 'dfs':
+                    states_queue.appendleft(next_state)
+                elif alg == 'bfs':
+                    states_queue.append(next_state)
