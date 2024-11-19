@@ -1,0 +1,77 @@
+#zadaca so lights out so bfs
+#od chatgpt
+
+N = 4
+TABLE = [
+    [0, 0, 1, 0],
+    [0, 0, 1, 1],
+    [1, 1, 0, 0],
+    [0, 1, 0, 0],
+]
+def expand_square(square, N):
+    # Expands to neighbors (up, down, left, right), and includes the square itself
+    x, y = square
+    neighbour_squares = []
+    for dx, dy in [(0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)]:
+        nx, ny = x + dx, y + dy
+        if 0 <= nx < N and 0 <= ny < N:
+            neighbour_squares.append((nx, ny))
+    return neighbour_squares
+
+def toggle_square(x, y, N, table):
+    # Toggle the square (x, y) and its neighbors
+    for nx, ny in expand_square((x, y), N):
+        table[ny][nx] = 1 - table[ny][nx]  # Toggle (0 -> 1 or 1 -> 0)
+
+from collections import deque
+
+def bfs_solution(N, initial_table):
+    # Initialize the queue with the starting state and an empty path
+    queue = deque([(initial_table, [])])
+    visited = set()
+    visited.add(tuple(map(tuple, initial_table)))  # To keep track of visited states
+    
+    # Goal state (all 0's)
+    goal_state = [[0] * N for _ in range(N)]
+    
+    while queue:
+        current_state, path = queue.popleft()
+        
+        # If we reach the goal state, return the path
+        if current_state == goal_state:
+            return path
+        
+        # Explore all possible moves (clicking each square)
+        for x in range(N):
+            for y in range(N):
+                # Create a copy of the current state and toggle square (x, y)
+                new_state = [row[:] for row in current_state]  # Deep copy of current state
+                toggle_square(x, y, N, new_state)
+                
+                if tuple(map(tuple, new_state)) not in visited:
+                    visited.add(tuple(map(tuple, new_state)))
+                    queue.append((new_state, path + [(x, y)]))  # Add the move to the path
+
+    return None  # If no solution found (though there should always be one)
+
+# Solve the puzzle using BFS
+solution_path = bfs_solution(N, TABLE)
+
+# Update the visualization after each move
+def apply_solution_to_fig(solution_path):
+    current_table = [row[:] for row in TABLE]  # Make a copy of the initial table
+    for x, y in solution_path:
+        toggle_square(x, y, N, current_table)
+        
+        # Update the figure (Plotly)
+        symbols = ['circle' if n else 'circle-open' for row in current_table for n in row]
+        fig.data[0].marker['symbol'] = symbols
+        
+        # You might want to add a delay here to visualize each move
+        fig.show()
+
+# Apply the solution and visualize
+if solution_path:
+    apply_solution_to_fig(solution_path)
+else:
+    print("No solution found.")
