@@ -1,0 +1,63 @@
+import heapq
+
+DIRECTIONS = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # (delta_x, delta_y)
+n = 7  # Size of the grid
+
+def valid_move(x, y):
+    """Check if (x, y) is within the grid boundaries."""
+    return 0 <= x < n and 0 <= y < n
+
+def expand_state(human_pos, box_pos, energy_used):
+    next_states = []
+   
+    human_x, human_y = human_pos
+    box_x, box_y = box_pos
+
+    for dx, dy in DIRECTIONS:
+        new_human_x, new_human_y = human_x + dx, human_y + dy
+        if valid_move(new_human_x, new_human_y):
+            # Human moves without pushing the box
+            if (new_human_x, new_human_y) != (box_x, box_y):
+                next_states.append(((new_human_x, new_human_y), box_pos, 1))  # Move cost is 1 (no box push)
+            else:
+                # If the human is pushing the box
+                new_box_x, new_box_y = box_x + dx, box_y + dy
+                if valid_move(new_box_x, new_box_y):
+                    next_states.append(((new_human_x, new_human_y), (new_box_x, new_box_y), 4))  # Move cost is 4 (box push)
+    return next_states
+
+def uniform_cost_search(start, goal_pos):
+    expanded = set()  # Set to track visited states
+    queue = [(0, [start])]  # Priority queue stores (energy_used, path)
+    heapq.heapify(queue)  # Make sure it's a priority queue
+
+    while queue:
+        energy_used, path = heapq.heappop(queue)  # Pop the state with the least energy used
+        human_pos, box_pos = path[-1]  # Get current human and box positions
+       
+        # If the box is at the goal, return the energy used and the full path
+        if box_pos == goal_pos:
+            return energy_used, path
+
+        # If this state has been visited, skip it
+        if (human_pos, box_pos) in expanded:
+            continue
+       
+        # Expand to generate all possible next states
+        for next_human_pos, next_box_pos, move_cost in expand_state(human_pos, box_pos, energy_used):
+            if (next_human_pos, next_box_pos) not in expanded:
+                # Push the new state with updated path and energy cost
+                heapq.heappush(queue, (energy_used + move_cost, path + [(next_human_pos, next_box_pos)]))
+       
+        # Mark the current state as visited
+        expanded.add((human_pos, box_pos))
+
+    return -1  # Return -1 if no path is found (although the problem guarantees a solution)
+
+# Test the algorithm
+start = ((3, 1), (3, 2))  # Starting position of human and box
+goal_pos = (3, 3)  # Goal position (house's location)
+
+energy_used, path = uniform_cost_search(start, goal_pos)
+print(f"Energy used: {energy_used}")
+print(f"Path to the goal: {path}")
