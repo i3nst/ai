@@ -62,3 +62,25 @@ Solution path:
 (0, 2, 0)
 (0, 2, 1)
 (0, 0, 0)
+
+ako e so a*
+def heuristic(state):
+    missionaries_left, cannibals_left, boat_position = state
+    return missionaries_left+cannibals_left
+
+def a_star_search(initial_state, goal_state):
+    open_list = []
+    heapq.heappush(open_list, (0+heuristic(initial_state), 0 ,initial_state, [])
+    visited = set()
+    while open_list:
+        f,g,state, path = heapq.heappop(open_list)
+        if stae == goal_state:
+            return path + [state]
+        if state not in visited:
+            visited.add(state)
+            for new_state in expand_state(state):
+                if new_state not in visited:
+                    new_g = g+1
+                    new_h = heuristic(new_state)
+                    heapq.heappush(open_list, (new_g + new_h, new_g, new_state, path + [state])
+    return None
