@@ -1,3 +1,10 @@
 За да откријам според која feature прво се дели дрвото и натака | тука бирам кој чекор на делба ме интересират
 first_split_feature = clf.feature_names_in_[clf.tree_.feature[0]]
 print(f"The first feature split is: {first_split_feature}")
+
+За да сменам податоци да бидат во нумерички облик
+le = LabelEncoder() 
+le.fit(x['sex'])
+le.classes_
+new_sex = le.transform(x['sex'])
+x['sex'] = new_sex
