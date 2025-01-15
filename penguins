@@ -1,0 +1,111 @@
+import pandas as pd
+df = pd.read_csv('data-Copy1/penguins.csv')
+df
+Издвојте ја колоната species во нова променлива. 
+Потоа поделете го податочното множество на два дела. Поголемиот дел нека е 80% и ќе служи за тренирање, а помалиот дел од 20% ќе служи за проверка на повединието на алгоритмите кои ќе ги имплементирате понатаму.
+y = df['species']
+x = df.iloc[:,1:]
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+le = LabelEncoder() 
+le.fit(x['sex'])
+le.classes_
+new_sex = le.transform(x['sex'])
+x['sex'] = new_sex
+le = LabelEncoder()
+le.fit(x['island'])
+le.classes_
+new_island = le.transform(x['island'])
+x['island'] = new_island
+x_train, x_test, y_train, y_test = train_test_split(x, y,random_state = 80, test_size=0.2)
+Користејќи ја библиотеката sklearn, вчитајте невронска мрежа од типот Multi-layer Perceptron, претставено преку класата MLPClassifier, а потоа вметнете ги податоците за тренирање за да ја истренирате мрежата.
+from sklearn.neural_network import MLPClassifier
+clf = MLPClassifier(hidden_layer_sizes=(20, 20, 20), random_state=72)
+clf.fit(x_train, y_train)
+Пресметајте ја прецизноста на мрежата за податоците кои мрежата ги нема видено (на кои нема тренирано). 
+Потоа пресметајте ја прецизноста на мрежата за податоците кои ги има видено (на кои има тренирано). Споредете ги резултатите. Ви изгледаат ли во ред?
+y_predict = clf.predict(x_test)
+from sklearn.metrics import accuracy_score
+accuracy_score(y_test,y_predict)*100 /vo procenti
+Кои пингвини мрежата успева да ги распознава подобро, машките или женските?
+df_male = df[df['sex'] == 'MALE'] # go delam data frame-ot na mashki i zhenski pingvini
+df_female = df[df['sex'] == 'FEMALE']
+y_male_df = df_male['species'] 
+x_male_df = df_male.iloc[:,1:]
+y_female_df = df_female['species']
+x_female_df = df_female.iloc[:,1:]
+x_male_df['island'] = le.fit_transform(x_male_df['island'])
+x_male_df['sex'] = le.fit_transform(x_male_df['sex'])
+x_female_df['sex'] = le.fit_transform(x_female_df['sex'])
+x_female_df['island'] = le.fit_transform(x_female_df['island'])
+y_predict_male = clf.predict(x_male_df)
+accuracy_score(y_male_df,y_predict_male)*100
+y_predict_female = clf.predict(x_female_df)
+accuracy_score(y_female_df,y_predict_female)*100
+Од кој вид е даден машки пингвин со признаци culmen_length_mm = 72, culmen_depth_mm = 34, flipper_length_mm = 202, body_mass_g = 4450, и е пронајден на островот Торгерсен?
+data = {
+    'island' : [2], 
+    'culmen_length_mm': [72],
+    'culmen_depth_mm': [34],
+    'flipper_length_mm': [202],
+    'body_mass_g' : [4450],
+    'sex' : [1]
+}
+df_check = pd.DataFrame(data)
+df_check
+new_penguin = clf.predict(df_check)
+new_penguin
+import numpy as np
+def entropy(a, b, c):
+    """
+    Function that calculates information entropy.
+    :param a: subset A size
+    :param b: subset B size
+    :returns: entropy
+    """
+    if a == 0 or b == 0 or c == 0:
+        return 0
+    m = a + b
+    return - a/m * np.log2(a/m) - b/m * np.log2(b/m) -c/m * np.log2(c/m)
+# prvo ja prajme entropy funkcijia
+def entropy_of_dataset(df, output_column, class_1, class_2, class_3):
+#     ги земаме податоците од множеството df каде излезот е еднаков на класа 1
+    class_1_data = df.query(f"{output_column} == '{class_1}'")
+#     ги земаме податоците од множеството df каде излезот е еднаков на класа 2
+    class_2_data = df.query(f"{output_column} == '{class_2}'")
+
+    class_3_data = df.query(f"{output_column} == '{class_3}'")
+#     ја пресметуваме ентропијата за даденото множество податоци
+    return entropy(class_1_data.shape[0], class_2_data.shape[0], class_3_data.shape[0])
+output_column = 'species'
+class_1 = 'Adelie'
+class_2 = 'Gentoo'
+class_3 = 'Chinstrap'
+
+h_before_split = entropy_of_dataset(df,output_column,class_1, class_2, class_3)
+df['culmen_length_mm_over_30'] = df['culmen_length_mm'] > 40
+df = df [['culmen_length_mm_over_30','sex','species']]
+# rabotime prvo za SEX
+male_data = df.query("sex == 'MALE'")
+female_data = df.query("sex == 'FEMALE'")
+h_male_data = entropy_of_dataset(male_data,output_column,class_1, class_2, class_3)
+h_female_data = entropy_of_dataset(female_data,output_column,class_1, class_2, class_3)
+factor_male_data = male_data.shape[0]/df.shape[0] # gi zema prvite i gi deli so prvite nekolku
+factor_female_data = female_data.shape[0]/df.shape[0]
+
+h_after_split_sex = factor_male_data*h_male_data + factor_female_data*h_female_data
+
+information_gain_sex = h_before_split - h_after_split_sex
+information_gain_sex
+# rabotime za CULMENLENGHT
+true_data = df.query("culmen_length_mm_over_30 == True") #true e culmen over 30
+false_data = df.query("culmen_length_mm_over_30 == False") #false culmen under 30
+h_true_data = entropy_of_dataset(true_data,output_column,class_1, class_2, class_3)
+h_false_data = entropy_of_dataset(false_data,output_column,class_1, class_2, class_3)
+factor_true_data = true_data.shape[0]/df.shape[0] # gi zema prvite i gi deli so prvite nekolku
+factor_false_data = false_data.shape[0]/df.shape[0]
+
+h_after_split_culmen = factor_true_data*h_true_data + factor_false_data*h_false_data
+
+information_gain_culmen = h_before_split - h_after_split_culmen
+information_gain_culmen
