@@ -1,0 +1,3 @@
+За да откријам според која feature прво се дели дрвото и натака | тука бирам кој чекор на делба ме интересират
+first_split_feature = clf.feature_names_in_[clf.tree_.feature[0]]
+print(f"The first feature split is: {first_split_feature}")
