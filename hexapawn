@@ -1,0 +1,162 @@
+import random
+
+# Constants
+PLAYER_X = 'X'  # Player X (AI)
+PLAYER_O = 'O'  # Player O (Human or AI)
+EMPTY = ' '
+
+# Hexapawn board size
+BOARD_SIZE = 3
+
+# Function to display the board
+def display_board(board):
+    for row in board:
+        print(" | ".join(row))
+        print("-" * 5)
+
+# Check if the current player has won
+def check_winner(board, player):
+    # Check for victory conditions for the player
+    if player == PLAYER_X:
+        # Player X wins by reaching the last row
+        for col in range(BOARD_SIZE):
+            if board[0][col] == PLAYER_X:
+                return True
+    else:
+        # Player O wins by reaching the first row
+        for col in range(BOARD_SIZE):
+            if board[2][col] == PLAYER_O:
+                return True
+    return False
+
+# Check if a move is valid
+def is_valid_move(board, player, from_row, from_col, to_row, to_col):
+    # Check if the move is within bounds
+    if to_row < 0 or to_row >= BOARD_SIZE or to_col < 0 or to_col >= BOARD_SIZE:
+        return False
+
+    # Check if the destination square is empty
+    if board[to_row][to_col] != EMPTY:
+        return False
+
+    # Player X moves upwards, Player O moves downwards
+    if player == PLAYER_X and from_row <= to_row:
+        return False
+    if player == PLAYER_O and from_row >= to_row:
+        return False
+
+    # Check if diagonal move for capturing an opponent's pawn
+    if abs(from_col - to_col) == 1 and abs(from_row - to_row) == 1:
+        # Can only capture opponent's pawn
+        opponent = PLAYER_O if player == PLAYER_X else PLAYER_X
+        if board[to_row][to_col] == opponent:
+            return True
+
+    # Normal move (forward one space)
+    return abs(from_col - to_col) == 0 and abs(from_row - to_row) == 1
+
+# Generate all valid moves for the current player
+def generate_moves(board, player):
+    moves = []
+    for row in range(BOARD_SIZE):
+        for col in range(BOARD_SIZE):
+            if board[row][col] == player:
+                # Check possible moves (normal move or capture)
+                for dr in [-1, 1]:
+                    for dc in [-1, 1]:
+                        to_row = row + dr
+                        to_col = col + dc
+                        if is_valid_move(board, player, row, col, to_row, to_col):
+                            moves.append((row, col, to_row, to_col))
+    return moves
+
+# Apply a move to the board
+def apply_move(board, player, from_row, from_col, to_row, to_col):
+    new_board = [row[:] for row in board]  # Create a copy of the board
+    new_board[from_row][from_col] = EMPTY  # Remove the pawn from the current position
+    new_board[to_row][to_col] = player  # Place the pawn at the new position
+    return new_board
+
+# Minimax algorithm with alpha-beta pruning
+def minimax(board, depth, alpha, beta, maximizing_player):
+    # Check for base case (game over or max depth reached)
+    if depth == 0 or check_winner(board, PLAYER_X) or check_winner(board, PLAYER_O):
+        if check_winner(board, PLAYER_X):
+            return 1  # X wins
+        elif check_winner(board, PLAYER_O):
+            return -1  # O wins
+        else:
+            return 0  # Draw or stalemate
+
+    # Generate all valid moves for the current player
+    if maximizing_player:
+        best_value = -float('inf')  # Maximizing player (AI)
+        for move in generate_moves(board, PLAYER_X):
+            from_row, from_col, to_row, to_col = move
+            new_board = apply_move(board, PLAYER_X, from_row, from_col, to_row, to_col)
+            best_value = max(best_value, minimax(new_board, depth - 1, alpha, beta, False))
+            alpha = max(alpha, best_value)
+            if beta <= alpha:
+                break  # Alpha-beta pruning
+        return best_value
+    else:
+        best_value = float('inf')  # Minimizing player (opponent)
+        for move in generate_moves(board, PLAYER_O):
+            from_row, from_col, to_row, to_col = move
+            new_board = apply_move(board, PLAYER_O, from_row, from_col, to_row, to_col)
+            best_value = min(best_value, minimax(new_board, depth - 1, alpha, beta, True))
+            beta = min(beta, best_value)
+            if beta <= alpha:
+                break  # Alpha-beta pruning
+        return best_value
+
+# Find the best move for the AI (using minimax with alpha-beta pruning)
+def find_best_move(board):
+    best_value = -float('inf')
+    best_move = None
+    for move in generate_moves(board, PLAYER_X):
+        from_row, from_col, to_row, to_col = move
+        new_board = apply_move(board, PLAYER_X, from_row, from_col, to_row, to_col)
+        move_value = minimax(new_board, 3, -float('inf'), float('inf'), False)  # Depth = 3
+        if move_value > best_value:
+            best_value = move_value
+            best_move = move
+    return best_move
+
+# Game loop
+def play_game():
+    board = [
+        [PLAYER_X, PLAYER_X, PLAYER_X],
+        [EMPTY, EMPTY, EMPTY],
+        [PLAYER_O, PLAYER_O, PLAYER_O]
+    ]
+    current_player = PLAYER_X  # AI starts
+    while True:
+        display_board(board)
+        
+        if current_player == PLAYER_X:
+            print("AI's turn:")
+            move = find_best_move(board)
+        else:
+            print("Human's turn:")
+            # Human move (you can change this to take user input instead)
+            move = random.choice(generate_moves(board, PLAYER_O))  # Random for simplicity
+        
+        from_row, from_col, to_row, to_col = move
+        board = apply_move(board, current_player, from_row, from_col, to_row, to_col)
+
+        # Check if anyone has won
+        if check_winner(board, PLAYER_X):
+            display_board(board)
+            print("AI wins!")
+            break
+        elif check_winner(board, PLAYER_O):
+            display_board(board)
+            print("Player O wins!")
+            break
+
+        # Switch player
+        current_player = PLAYER_O if current_player == PLAYER_X else PLAYER_X
+
+# Play the game
+play_game()
