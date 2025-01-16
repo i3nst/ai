@@ -1,0 +1,269 @@
+# Constants for players
+PLAYER_X = 'X'  # Player X (MAX)
+PLAYER_O = 'O'  # Player O (MIN)
+
+# Directions of movement: player can move one square forward or capture diagonally
+MOVES = [(-1, 0), (-1, -1), (-1, 1)]  # Up, up-left, up-right for X (MAX)
+
+# A 3x3 Hexapawn game board
+def init_board():
+    return [['O', 'O', 'O'],
+            [' ', ' ', ' '],
+            ['X', 'X', 'X']]
+
+# Check if a player has won the game
+def check_win(board, player):
+    if player == PLAYER_X:
+        # X wins if they reach the top row
+        return any(board[0][col] == PLAYER_X for col in range(3))
+    elif player == PLAYER_O:
+        # O wins if they reach the bottom row
+        return any(board[2][col] == PLAYER_O for col in range(3))
+    return False
+
+# Evaluate the board (for terminal states)
+def evaluate_board(board):
+    if check_win(board, PLAYER_X):
+        return 1  # X wins
+    elif check_win(board, PLAYER_O):
+        return -1  # O wins
+    else:
+        return 0  # Draw or ongoing
+
+# Generate all possible moves for the current player
+def generate_moves(board, player):
+    moves = []
+    directions = MOVES
+    if player == PLAYER_O:
+        directions = [(-1, 0), (-1, -1), (-1, 1)]  # Similar for O
+
+    for r in range(3):
+        for c in range(3):
+            if board[r][c] == player:
+                for dr, dc in directions:
+                    nr, nc = r + dr, c + dc
+                    if 0 <= nr < 3 and 0 <= nc < 3 and board[nr][nc] == ' ':
+                        # Regular move
+                        new_board = [row[:] for row in board]  # Copy board
+                        new_board[nr][nc] = player
+                        new_board[r][c] = ' '
+                        moves.append(new_board)
+                    # Handle captures
+                    if 0 <= nr < 3 and 0 <= nc < 3 and board[nr][nc] != player and board[nr][nc] != ' ':
+                        new_board = [row[:] for row in board]  # Copy board
+                        new_board[nr][nc] = player
+                        new_board[r][c] = ' '
+                        moves.append(new_board)
+    return moves
+
+# Switch between players
+def other_player(player):
+    return PLAYER_O if player == PLAYER_X else PLAYER_X
+
+# Minimax function as you provided
+def minimax(graph, node, player):
+    # Evaluate if the current board is a terminal state
+    if evaluate_board(node) != 0:  # Terminal state
+        return evaluate_board(node)
+
+    best = float('-inf') if player == PLAYER_X else float('inf')
+    moves = generate_moves(node, player)
+    
+    for move in moves:
+        result = minimax(graph, move, other_player(player))
+        
+        if player == PLAYER_X and result > best:
+            best = result
+        elif player == PLAYER_O and result < best:
+            best = result
+    
+    return best
+
+# Main game loop to play the game
+def play_game():
+    board = init_board()
+    print_board(board)
+    
+    current_player = PLAYER_X  # X starts
+    
+    while True:
+        print(f"Player {current_player}'s turn")
+        best_move = None
+        best_score = float('-inf') if current_player == PLAYER_X else float('inf')
+        
+        # Generate all possible moves
+        moves = generate_moves(board, current_player)
+        
+        # Find the best move using minimax
+        for move in moves:
+            score = minimax(None, move, other_player(current_player))
+            if (current_player == PLAYER_X and score > best_score) or (current_player == PLAYER_O and score < best_score):
+                best_score = score
+                best_move = move
+        
+        # Apply the best move
+        if best_move:
+            board = best_move
+            print_board(board)
+
+        # Check if the game has ended
+        if check_win(board, PLAYER_X):
+            print("Player X wins!")
+            break
+        elif check_win(board, PLAYER_O):
+            print("Player O wins!")
+            break
+        
+        # Switch turns
+        current_player = other_player(current_player)
+
+# Print the board in a human-readable format
+def print_board(board):
+    for row in board:
+        print(" ".join(row))
+    print("\n")
+
+# Run the game
+if __name__ == '__main__':
+    play_game()
+
+-----------------------------------------------------------------------------------------
+WITH ALPHA - BETA
+
+# Constants for players
+PLAYER_X = 'X'  # Player X (MAX)
+PLAYER_O = 'O'  # Player O (MIN)
+
+# Directions of movement: player can move one square forward or capture diagonally
+MOVES = [(-1, 0), (-1, -1), (-1, 1)]  # Up, up-left, up-right for X (MAX)
+
+# A 3x3 Hexapawn game board
+def init_board():
+    return [['O', 'O', 'O'],
+            [' ', ' ', ' '],
+            ['X', 'X', 'X']]
+
+# Check if a player has won the game
+def check_win(board, player):
+    if player == PLAYER_X:
+        # X wins if they reach the top row
+        return any(board[0][col] == PLAYER_X for col in range(3))
+    elif player == PLAYER_O:
+        # O wins if they reach the bottom row
+        return any(board[2][col] == PLAYER_O for col in range(3))
+    return False
+
+# Evaluate the board (for terminal states)
+def evaluate_board(board):
+    if check_win(board, PLAYER_X):
+        return 1  # X wins
+    elif check_win(board, PLAYER_O):
+        return -1  # O wins
+    else:
+        return 0  # Draw or ongoing
+
+# Generate all possible moves for the current player
+def generate_moves(board, player):
+    moves = []
+    directions = MOVES
+    if player == PLAYER_O:
+        directions = [(-1, 0), (-1, -1), (-1, 1)]  # Similar for O
+
+    for r in range(3):
+        for c in range(3):
+            if board[r][c] == player:
+                for dr, dc in directions:
+                    nr, nc = r + dr, c + dc
+                    if 0 <= nr < 3 and 0 <= nc < 3 and board[nr][nc] == ' ':
+                        # Regular move
+                        new_board = [row[:] for row in board]  # Copy board
+                        new_board[nr][nc] = player
+                        new_board[r][c] = ' '
+                        moves.append(new_board)
+                    # Handle captures
+                    if 0 <= nr < 3 and 0 <= nc < 3 and board[nr][nc] != player and board[nr][nc] != ' ':
+                        new_board = [row[:] for row in board]  # Copy board
+                        new_board[nr][nc] = player
+                        new_board[r][c] = ' '
+                        moves.append(new_board)
+    return moves
+
+# Switch between players
+def other_player(player):
+    return PLAYER_O if player == PLAYER_X else PLAYER_X
+
+# Minimax function with Alpha-Beta pruning
+def minimax_ab(graph, node, player, alpha, beta):
+    # Evaluate if the current board is a terminal state
+    if evaluate_board(node) != 0:  # Terminal state
+        return evaluate_board(node)
+
+    moves = generate_moves(node, player)
+    
+    if player == PLAYER_X:  # Maximizing player (X)
+        best = float('-inf')
+        for move in moves:
+            best = max(best, minimax_ab(graph, move, other_player(player), alpha, beta))
+            alpha = max(alpha, best)
+            if beta <= alpha:
+                break  # Beta cutoff
+    else:  # Minimizing player (O)
+        best = float('inf')
+        for move in moves:
+            best = min(best, minimax_ab(graph, move, other_player(player), alpha, beta))
+            beta = min(beta, best)
+            if beta <= alpha:
+                break  # Alpha cutoff
+
+    return best
+
+# Main game loop to play the game
+def play_game():
+    board = init_board()
+    print_board(board)
+    
+    current_player = PLAYER_X  # X starts
+    
+    while True:
+        print(f"Player {current_player}'s turn")
+        best_move = None
+        best_score = float('-inf') if current_player == PLAYER_X else float('inf')
+        
+        # Generate all possible moves
+        moves = generate_moves(board, current_player)
+        
+        # Find the best move using minimax with alpha-beta pruning
+        alpha = float('-inf')
+        beta = float('inf')
+        
+        for move in moves:
+            score = minimax_ab(None, move, other_player(current_player), alpha, beta)
+            if (current_player == PLAYER_X and score > best_score) or (current_player == PLAYER_O and score < best_score):
+                best_score = score
+                best_move = move
+        
+        # Apply the best move
+        if best_move:
+            board = best_move
+            print_board(board)
+
+        # Check if the game has ended
+        if check_win(board, PLAYER_X):
+            print("Player X wins!")
+            break
+        elif check_win(board, PLAYER_O):
+            print("Player O wins!")
+            break
+        
+        # Switch turns
+        current_player = other_player(current_player)
+
+# Print the board in a human-readable format
+def print_board(board):
+    for row in board:
+        print(" ".join(row))
+    print("\n")
+
+# Run the game
+if __name__ == '__main__':
+    play_game()
