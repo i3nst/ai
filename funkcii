@@ -8,3 +8,10 @@ le.fit(x['sex'])
 le.classes_
 new_sex = le.transform(x['sex'])
 x['sex'] = new_sex
+
+Колку состојби да се проверат? MINIMAX algorithm
+  General Approach:
+
+    1.Count the total number of positions (for each square on the board).
+    2.Account for the constraints (such as the number of pawns, which pieces belong to which player, etc.).
+    3.Account for game-specific rules (such as legal moves and win conditions) that reduce the number of valid states.
