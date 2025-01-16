@@ -15,6 +15,24 @@ x['sex'] = new_sex
     1.Count the total number of positions (for each square on the board).
     2.Account for the constraints (such as the number of pawns, which pieces belong to which player, etc.).
     3.Account for game-specific rules (such as legal moves and win conditions) that reduce the number of valid states.
+          TIC-TAC-TOE
+                Game board: 3x3 grid (9 positions).
+                Branching factor: On average, each player has between 1 and 9 possible moves. A rough average branching factor is about 4.
+                Max depth: In the worst case, the game lasts 9 moves (all positions filled).
+                4^9 states
+          AMAZON
+                    Game board: 8x8 grid, with 2 players, each controlling 1 Amazon piece.
+                    Branching factor: A piece can move to several squares, and additionally, there are choices for where to shoot an arrow. The branching factor depends on the specific game state but is roughly 20-30 per turn.
+                    Max depth: For this game, the maximum depth might be around 10-15 moves, considering both players.
+                      Let’s take a rough branching factor of 25 and a depth of 10:
+                      Total states = 2510≈9.5×10132510≈9.5×1013.
+          HEXAPAWN
+                      Game board: 3x3 grid, each player has 3 pieces.
+                      Branching factor: Each player can move one of their pieces to an empty adjacent space or capture an opponent’s piece. There are about 3-5 legal moves on average per player.
+                      Max depth: The game generally lasts around 10-15 moves.
+                              Let’s take a branching factor of 4 and a depth of 10:
+                              Total states = 410=1,048,576410=1,048,576 states (approximate)
+
 
 Ако сакам да тргнам  некоја колона, пример 4та колона од вкупно 10:
   df_x = pd.concat([df.iloc[:, :3], df.iloc[:, 4:]], axis=1)
