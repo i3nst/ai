@@ -34,6 +34,10 @@ import pandas as pd
 
 # Read the TSV file
 df = pd.read_csv('your_data.tsv', delimiter='\t')
-
 # Save the DataFrame to a CSV file
 df.to_csv('your_data.csv', index=False)  # 'index=False' prevents writing row numbers to the CSV
+
+Регресија и класификација:
+Classification = Discrete categories (e.g., Good/Bad, Short/Tall).
+Regression = Continuous values (e.g., price, temperature).
+
